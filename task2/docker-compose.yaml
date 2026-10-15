@@ -1,0 +1,32 @@
+services:
+  # Сервіс з базою даних. Його ім'я (postgres) використовується
+  # як хост у SQLALCHEMY_DATABASE_URL у файлі conf/db.py
+  postgres:
+    image: postgres:16
+    container_name: hw02-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "567234"
+      POSTGRES_DB: hw02
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hw02"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Сервіс із FastAPI застосунком
+  app:
+    build: .
+    container_name: hw02-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
